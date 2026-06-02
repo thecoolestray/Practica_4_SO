@@ -7,75 +7,63 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
 
-    //1. Leer el archivo JSON
-    string filename = "tactile_captures_50.json";
+    string archivo = "tactile_captures_50.json";
 
     if (argc > 1) {
-        filename = argv[1];
+        archivo = argv[1];
     }
 
     cout << "==================================" << endl;
     cout << "Sistema de procesamiento tactil" << endl;
     cout << "==================================" << endl;
-    cout << "Archivo: " << filename << endl;
+    cout << "Archivo: " << archivo << endl;
 
-    vector<Capture> captures = readJSON(filename);
+    vector<Capture> capturas = leerJSON(archivo);
 
-    if (captures.empty()) {
-        cout << "Error: no se han podido cargar capturas." << endl;
+    if (capturas.empty()) {
+        cout << "Error: no se pudieron cargar capturas." << endl;
         return 1;
     }
 
-    cout << "Capturas cargadas: " << captures.size() << endl;
-    cout << endl;
+    cout << "Capturas cargadas: " << capturas.size() << endl;
 
-    //contadores para el resumen final
-    int sent    = 0;
-    int skipped = 0;
+    int enviados = 0;
+    int omitidos = 0;
 
-    //2. Procesar cada captura 
-    for (int i = 0; i < (int)captures.size(); i++) {
+    for (int i = 0; i < (int)capturas.size(); i++) {
 
         cout << "----------------------------------" << endl;
-        cout << "Procesando captura " << captures[i].id << endl;
+        cout << "Procesando captura " << capturas[i].id << endl;
 
-        //3. Validar que la matriz sea 16x16
-        if (!validateMatrix(captures[i].matrix)) {
-            cout << "Matriz invalida: no tiene 16x16. Saltando." << endl;
-            skipped++;
+        if (!validarMatriz(capturas[i].matrix)) {
+            cout << "Matriz invalida (no 16x16). Saltando." << endl;
+            omitidos++;
             continue;
         }
 
-        cout << "Validacion OK: matriz 16x16" << endl;
+        cout << "Validacion OK" << endl;
 
-        //4. Aplicar interpolacion bilineal 16x16 → 128x128
-        vector<vector<double>> interpolated =
-            bilinearInterpolation(captures[i].matrix, 128, 128);
+        vector<vector<double>> interpolada =
+            Interpolacionbilineal(capturas[i].matrix, 128, 128);
 
-        cout << "Interpolacion completada: "
-             << interpolated.size() << "x"
-             << interpolated[0].size() << endl;
+        cout << "Interpolacion lista: "
+             << interpolada.size() << "x"
+             << interpolada[0].size() << endl;
 
-        //5.enviar al servidor Python via HTTP POST
-        bool ok = sendPOST(captures[i].id, interpolated);
+        bool ok = enviarPOST(capturas[i].id, interpolada);
 
         if (ok) {
-            sent++;
+            enviados++;
         } else {
-            cout << "Fallo al enviar captura " << captures[i].id << endl;
+            cout << "Error enviando captura " << capturas[i].id << endl;
         }
     }
 
-    //6. Resumen final
-    cout << endl;
     cout << "==================================" << endl;
     cout << "RESUMEN" << endl;
+    cout << "Enviadas: " << enviados << endl;
+    cout << "Omitidas: " << omitidos << endl;
     cout << "==================================" << endl;
-    cout << "Total capturas : " << captures.size() << endl;
-    cout << "Enviadas OK    : " << sent             << endl;
-    cout << "Saltadas       : " << skipped          << endl;
-    cout << "==================================" << endl;
-    cout << "Proceso finalizado." << endl;
 
     return 0;
 }
