@@ -13,26 +13,26 @@ struct Capture {
 // Lee todas las capturas desde el archivo JSON
 std::vector<Capture> leerJSON(const std::string& filename);
 
-// Valida que la matriz sea exactamente 16x16
-bool validarMatriz(const std::vector<std::vector<double>>& matrix);
+// Valida matriz 16x16
+bool validarMatriz(const std::vector<std::vector<double>>& matriz);
 
-// Interpolacion bilineal manual: escala 16x16 a 128x128
+// Interpolacion bilineal 16x16 → 128x128
 std::vector<std::vector<double>> Interpolacionbilineal(
     const std::vector<std::vector<double>>& input,
-    int newWidth,
-    int newHeight
+    int nuevoAncho,
+    int nuevaAltura
 );
 
-// Convierte la matriz interpolada a formato JSON string
+// Convierte matriz a JSON
 std::string matrizaJSON(
     int captureID,
-    const std::vector<std::vector<double>>& matrix
+    const std::vector<std::vector<double>>& matriz
 );
 
-// Envia la matriz interpolada al servidor Python via HTTP POST
+// Envia datos al servidor Python
 bool enviarPOST(
     int captureID,
-    const std::vector<std::vector<double>>& matrix
+    const std::vector<std::vector<double>>& matriz
 );
 
 #endif
